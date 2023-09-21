@@ -8,13 +8,14 @@ import com.giassi.microservice.demo2.rest.users.entities.User;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class UserTestHelper {
 
     public static final String TEST_PASSWORD_DECRYPTED = "Test!123";
 
     // create a test user data
-    public static User getUserTestData(Long id, String username, String name, String surname, String email, String phone) {
+    public static User getUserTestData(UUID id, String username, String name, String surname, String email, String phone) {
         User user = new User();
         user.setId(id);
 

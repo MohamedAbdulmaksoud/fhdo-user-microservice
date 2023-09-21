@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -60,7 +61,7 @@ public class UserService {
         return listDto;
     }
 
-    public User getUserById(Long id) {
+    public User getUserById(UUID id) {
         if (id == null) {
             throw new InvalidUserIdentifierException("User Id cannot be null");
         }
@@ -234,7 +235,7 @@ public class UserService {
         log.debug(String.format("Address information set on User %s .", user.getId()));
     }
 
-    public void addUserRole(User user, long roleId) {
+    public void addUserRole(User user, UUID roleId) {
         Optional<Role> roleOpt = roleRepository.findById(roleId);
         if (!roleOpt.isPresent()) {
             throw new RoleNotFoundException("Role cannot be null");
@@ -243,7 +244,7 @@ public class UserService {
     }
 
     @Transactional
-    public User updateUser(Long id, CreateOrUpdateUserDTO updateUserDTO) {
+    public User updateUser(UUID id, CreateOrUpdateUserDTO updateUserDTO) {
         if (id == null) {
             throw new InvalidUserIdentifierException("Id cannot be null");
         }
@@ -339,7 +340,7 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUserById(Long id) {
+    public void deleteUserById(UUID id) {
         if (id == null) {
             throw new InvalidUserIdentifierException("Id cannot be null");
         }
@@ -351,7 +352,7 @@ public class UserService {
 
         // only not secured users can be deleted
         User user = userOpt.get();
-        if (user.isSecured()) {
+        if (user.getSecured()) {
             throw new UserIsSecuredException(String.format("User %s is secured and cannot be deleted.", id));
         }
 
@@ -376,7 +377,7 @@ public class UserService {
         // check the password
         if (EncryptionService.isPasswordValid(password, user.getPassword(), salt)) {
             // check if the user is enabled
-            if (!user.isEnabled()) {
+            if (!isEnabled(user)) {
                 // not enabled
                 throw new InvalidLoginException("User is not enabled");
             }
@@ -395,7 +396,7 @@ public class UserService {
     // add or remove a role on user
 
     @Transactional
-    public User addRole(Long id, Long roleId) {
+    public User addRole(UUID id, UUID roleId) {
         // check user
         Optional<User> userOpt = userRepository.findById(id);
         if (!userOpt.isPresent()) {
@@ -421,7 +422,7 @@ public class UserService {
     }
 
     @Transactional
-    public User removeRole(Long id, Long roleId) {
+    public User removeRole(UUID id, UUID roleId) {
         // check user
         Optional<User> userOpt = userRepository.findById(id);
         if (!userOpt.isPresent()) {
@@ -444,6 +445,10 @@ public class UserService {
         log.info(String.format("Removed role %s on user id = %s", role.getRole(), user.getId()));
 
         return user;
+    }
+
+    private boolean isEnabled(User user){
+        return Optional.of(user).map(User::getEnabled).map(enabled -> enabled.equals(Boolean.TRUE)).orElse(false);
     }
 
 }

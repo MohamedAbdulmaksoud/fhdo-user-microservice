@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Entity
 @Table(name="contacts")
@@ -14,8 +15,9 @@ import javax.persistence.*;
 public class Contact {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="user_id")
-    private Long userId;
+    private UUID userId;
 
     @Column(name="email", nullable = false)
     private String email;

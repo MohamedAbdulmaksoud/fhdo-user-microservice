@@ -1,34 +1,31 @@
 package com.giassi.microservice.demo2.rest.users;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.giassi.microservice.demo2.rest.UserRestController;
 import com.giassi.microservice.demo2.rest.users.dtos.UserDTO;
 import com.giassi.microservice.demo2.rest.users.entities.User;
 import com.giassi.microservice.demo2.rest.users.services.UserService;
 import com.giassi.microservice.demo2.rest.users.services.UserTestHelper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(SpringExtension.class)
+@WebMvcTest(UserRestController.class)
 public class UserRestControllerIntegrationTest {
-
-    final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     private MockMvc mvc;
@@ -38,11 +35,11 @@ public class UserRestControllerIntegrationTest {
 
     @Test
     public void getUserPresentationList() throws Exception {
-        UserDTO user1 = new UserDTO(UserTestHelper.getUserTestData(1L, "andrea", "Andrea",
+        UserDTO user1 = new UserDTO(UserTestHelper.getUserTestData(UUID.randomUUID(), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455"));
-        UserDTO user2 = new UserDTO(UserTestHelper.getUserTestData(2L, "marco", "Marco",
+        UserDTO user2 = new UserDTO(UserTestHelper.getUserTestData(UUID.randomUUID(), "marco", "Marco",
                 "Verdi", "marco.test@gmail.com", "+3531122334466"));
-        UserDTO user3 = new UserDTO(UserTestHelper.getUserTestData(3L, "franco", "Franco",
+        UserDTO user3 = new UserDTO(UserTestHelper.getUserTestData(UUID.randomUUID(), "franco", "Franco",
                 "Rossi", "franco.test@gmail.com", "+3531122334477"));
 
         List<UserDTO> userList = Arrays.asList(user1, user2, user3);
@@ -50,10 +47,10 @@ public class UserRestControllerIntegrationTest {
         given(userService.getUserPresentationList()).willReturn(userList);
 
         mvc.perform(MockMvcRequestBuilders.get("/users")
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
-                .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                        .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.userList[0].name").value("Andrea"))
                 .andExpect(jsonPath("$.userList[0].surname").value("Giassi"))
                 .andExpect(jsonPath("$.userList[0].contactDTO.email").value("andrea.test@gmail.com"))
@@ -71,19 +68,19 @@ public class UserRestControllerIntegrationTest {
                 .andExpect(jsonPath("$.userList[2].contactDTO.phone").value("+3531122334477"));
     }
 
-    @Test
-    public void getUserById() throws Exception {
-        User user1 = UserTestHelper.getUserTestData(1L, "andrea", "Andrea",
+@Test
+public void getUserById() throws Exception {
+        User user1 = UserTestHelper.getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         user1.setBirthDate(LocalDate.of(1977, 8, 14));
 
-        given(userService.getUserById(1L)).willReturn(user1);
+        given(userService.getUserById(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"))).willReturn(user1);
 
-        Long userId = 1L;
+        UUID userId = UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204");
 
         mvc.perform(MockMvcRequestBuilders.get("/users/" + userId)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
                         .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -94,5 +91,8 @@ public class UserRestControllerIntegrationTest {
                 .andExpect(jsonPath("birthDate").value("1977-08-14"))
                 .andExpect(jsonPath("contactDTO.phone").value("+3531122334455"));
     }
-
 }
+
+
+
+

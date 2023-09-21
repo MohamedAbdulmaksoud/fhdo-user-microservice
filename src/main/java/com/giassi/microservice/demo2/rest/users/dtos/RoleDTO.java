@@ -7,12 +7,13 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @NoArgsConstructor
 @Data
 public class RoleDTO implements Serializable {
 
-    private Long id;
+    private UUID id;
     private String role;
 
     private List<PermissionDTO> permissions = new ArrayList<>();
@@ -25,7 +26,7 @@ public class RoleDTO implements Serializable {
         role.getPermissions().stream().forEach(e -> permissions.add(new PermissionDTO(e)));
     }
 
-    public RoleDTO(Long id, String role) {
+    public RoleDTO(UUID id, String role) {
         this.id = id;
         this.role = role;
     }

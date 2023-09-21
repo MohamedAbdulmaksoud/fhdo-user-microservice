@@ -5,23 +5,22 @@ import com.giassi.microservice.demo2.rest.users.entities.Role;
 import com.giassi.microservice.demo2.rest.users.exceptions.*;
 import com.giassi.microservice.demo2.rest.users.repositories.PermissionRepository;
 import com.giassi.microservice.demo2.rest.users.repositories.RoleRepository;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RoleServiceTest {
 
     @Mock
@@ -30,24 +29,23 @@ public class RoleServiceTest {
     @Mock
     private PermissionRepository permissionRepository;
 
-    @Autowired
     @InjectMocks
     private RoleService roleService = new RoleService();
 
-    @Test(expected = InvalidRoleIdentifierException.class)
-    public void given_wrong_roleId_when_getRoleById_throw_InvalidRoleIdentifierException() {
-        roleService.getRoleById(null);
+    @Test
+    public void givenWrongRoleId_whenGetRoleById_throwInvalidRoleIdentifierException() {
+        assertThrows(InvalidRoleIdentifierException.class, () -> roleService.getRoleById(null));
     }
 
-    @Test(expected = RoleNotFoundException.class)
-    public void given_not_existing_roleId_when_getRoleById_throw_RoleNotFoundException() {
-        Long roleId = 99L;
-        roleService.getRoleById(roleId);
+    @Test
+    public void givenNotExistingRoleId_whenGetRoleById_throwRoleNotFoundException() {
+        UUID roleId = UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28");
+        assertThrows(RoleNotFoundException.class, () -> roleService.getRoleById(roleId));
     }
 
     @Test
     public void given_existing_roleId_when_getRoleById_return_Role() {
-        Long roleId = 99L;
+        UUID roleId = UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28");
         Role role = new Role(roleId, "TEST ROLE");
 
         given(roleRepository.findById(roleId)).willReturn(Optional.of(role));
@@ -60,39 +58,39 @@ public class RoleServiceTest {
 
     // validateRoleName
 
-    @Test(expected = InvalidRoleDataException.class)
-    public void given_invalid_role_name_when_validateRoleName_throw_InvalidRoleDataException() {
-        roleService.validateRoleName(null);
+    @Test
+    public void givenInvalidRoleName_whenValidateRoleName_throwInvalidRoleDataException() {
+        assertThrows(InvalidRoleDataException.class, () -> RoleService.validateRoleName(null));
     }
 
-    @Test(expected = InvalidRoleDataException.class)
+    @Test
     public void given_empty_role_name_when_validateRoleName_throw_InvalidRoleDataException() {
-        roleService.validateRoleName("");
+        assertThrows(InvalidRoleDataException.class, () -> RoleService.validateRoleName(""));
     }
 
     @Test
     public void given_empty_role_name_when_validateRoleName_no_exception_occurs() {
-        roleService.validateRoleName("VALID_ROLE_TEST");
+        RoleService.validateRoleName("VALID_ROLE_TEST");
     }
 
     // createRole
 
-    @Test(expected = InvalidRoleDataException.class)
+    @Test
     public void given_invalid_role_name_when_createRole_throw_InvalidRoleDataException() {
-        roleService.createRole(null);
+        assertThrows(InvalidRoleDataException.class, () -> roleService.createRole(null));
     }
 
-    @Test(expected = RoleInUseException.class)
+    @Test
     public void given_valid_used_name_when_createRole_throw_RoleInUseException() {
-        Role role = new Role(1L, "TEST");
+        Role role = new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "TEST");
         given(roleRepository.findByRole("TEST")).willReturn(Optional.of(role));
+        assertThrows(RoleInUseException.class, () -> roleService.createRole("TEST"));
 
-        roleService.createRole("TEST");
     }
 
     @Test
     public void given_valid_not_used_name_when_createRole_returnRole() {
-        Long genId = 123L;
+        UUID genId = UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28");
         Role roleData = new Role(genId, "TEST");
 
         when(roleRepository.save(any(Role.class))).thenReturn(new Role(genId, roleData.getRole()));
@@ -106,61 +104,61 @@ public class RoleServiceTest {
 
     // deleteRole
 
-    @Test(expected = RoleNotFoundException.class)
+    @Test
     public void given_not_existing_role_when_deleteRole_throw_RoleNotFoundException() {
-        roleService.deleteRole(1L);
+        assertThrows(RoleNotFoundException.class, () -> roleService.deleteRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28")));
     }
 
-    @Test(expected = RoleInUseException.class)
+    @Test
     public void given_existing_role_in_use_when_deleteRole_throw_RoleInUseException() {
-        given(roleRepository.findById(1L)).willReturn(Optional.of(new Role(1L, "TEST")));
-        given(roleRepository.countRoleUsage(1L)).willReturn(10L);
+        given(roleRepository.findById(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(Optional.of(new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "TEST")));
+        given(roleRepository.countRoleUsage(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(10L);
 
-        roleService.deleteRole(1L);
+        assertThrows(RoleInUseException.class, () -> roleService.deleteRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28")));
     }
 
     @Test
     public void given_existing_role_not_in_use_when_deleteRole_Ok() {
-        given(roleRepository.findById(1L)).willReturn(Optional.of(new Role(1L, "TEST")));
-        given(roleRepository.countRoleUsage(1L)).willReturn(0L);
+        given(roleRepository.findById(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(Optional.of(new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "TEST")));
+        given(roleRepository.countRoleUsage(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(0L);
 
-        roleService.deleteRole(1L);
+        roleService.deleteRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"));
     }
 
     // validatePermissionKey
 
-    @Test(expected = InvalidPermissionDataException.class)
-    public void given_null_permissionKey_when_validatePermissionKey_throw_InvalidPermissionDataException() {
-        roleService.validatePermissionKey(null);
+    @Test
+    public void givenNullPermissionKey_whenValidatePermissionKey_throwInvalidPermissionDataException() {
+        assertThrows(InvalidPermissionDataException.class, () -> RoleService.validatePermissionKey(null));
     }
 
-    @Test(expected = InvalidPermissionDataException.class)
-    public void given_empty_permissionKey_when_validatePermissionKey_throw_InvalidPermissionDataException() {
-        roleService.validatePermissionKey("");
+    @Test
+    public void givenEmptyPermissionKey_whenValidatePermissionKey_throwInvalidPermissionDataException() {
+        assertThrows(InvalidPermissionDataException.class, () -> RoleService.validatePermissionKey(""));
     }
 
     // addPermissionOnRole
 
-    @Test(expected = InvalidPermissionDataException.class)
-    public void given_invalid_permission_when_addPermissionOnRole_throw_InvalidPermissionDataException() {
-        roleService.addPermissionOnRole(1L, "");
+    @Test
+    public void givenInvalidPermission_whenAddPermissionOnRole_throwInvalidPermissionDataException() {
+        assertThrows(InvalidPermissionDataException.class, () -> roleService.addPermissionOnRole(UUID.fromString("5a753403-d616-4b60-bc45-205ca614b669"), ""));
     }
 
-    @Test(expected = RoleNotFoundException.class)
-    public void given_not_existing_role_when_addPermissionOnRole_throw_RoleNotFoundException() {
-        roleService.addPermissionOnRole(1L, "PERMISSION_ONE");
+    @Test
+    public void givenNotExistingRole_whenAddPermissionOnRole_throwRoleNotFoundException() {
+        assertThrows(RoleNotFoundException.class, () -> roleService.addPermissionOnRole(UUID.fromString("5a753403-d616-4b60-bc45-205ca614b669"), "PERMISSION_ONE"));
     }
 
     @Test
     public void given_existing_role_and_not_existing_permission_return_role_updated() {
-        Role role = new Role(1L, "TEST");
-        given(roleRepository.findById(1L)).willReturn(Optional.of(role));
+        Role role = new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "TEST");
+        given(roleRepository.findById(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(Optional.of(role));
 
-        Role roleUpdated = roleService.addPermissionOnRole(1L, "PERMISSION_ONE");
+        Role roleUpdated = roleService.addPermissionOnRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "PERMISSION_ONE");
 
         assertNotNull(roleUpdated);
         // role data
-        assertEquals(Long.valueOf(1L), roleUpdated.getId());
+        assertEquals(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), roleUpdated.getId());
         assertEquals("TEST", roleUpdated.getRole());
 
         // permissions
@@ -169,84 +167,86 @@ public class RoleServiceTest {
 
     @Test
     public void given_existing_role_and_existing_permission_return_role_updated() {
-        Role role = new Role(1L, "TEST");
-        given(roleRepository.findById(1L)).willReturn(Optional.of(role));
+        Role role = new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "TEST");
+        given(roleRepository.findById(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(Optional.of(role));
 
         Permission permission = new Permission();
-        permission.setId(1L);
+        permission.setId(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"));
         permission.setPermission("PERMISSION_ONE");
 
         given(permissionRepository.findByPermission("PERMISSION_ONE")).willReturn(Optional.of(permission));
 
-        Role roleUpdated = roleService.addPermissionOnRole(1L, "PERMISSION_ONE");
+        Role roleUpdated = roleService.addPermissionOnRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "PERMISSION_ONE");
 
         assertNotNull(roleUpdated);
         // role data
-        assertEquals(Long.valueOf(1L), roleUpdated.getId());
+        assertEquals(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), roleUpdated.getId());
         assertEquals("TEST", roleUpdated.getRole());
 
         // permissions
         assertEquals(1L, roleUpdated.getPermissions().size());
     }
 
-    @Test(expected = InvalidPermissionDataException.class)
-    public void given_existing_role_and_existing_already_associated_permission_throw_InvalidPermissionDataException() {
-        Role role = new Role(1L, "TEST");
-        role.getPermissions().add(new Permission(1L, "PERMISSION_ONE"));
+    @Test
+    public void givenExistingRoleAndExistingAlreadyAssociatedPermission_throwInvalidPermissionDataException() {
+        Role role = new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "TEST");
+        role.getPermissions().add(new Permission(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "PERMISSION_ONE"));
 
-        given(roleRepository.findById(1L)).willReturn(Optional.of(role));
+        given(roleRepository.findById(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(Optional.of(role));
 
-        Permission permission = new Permission(1L, "PERMISSION_ONE");
+        Permission permission = new Permission(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "PERMISSION_ONE");
 
         given(permissionRepository.findByPermission("PERMISSION_ONE")).willReturn(Optional.of(permission));
 
-        Role roleUpdated = roleService.addPermissionOnRole(1L, "PERMISSION_ONE");
+        assertThrows(InvalidPermissionDataException.class, () -> {
+            Role roleUpdated = roleService.addPermissionOnRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "PERMISSION_ONE");
 
-        assertNotNull(roleUpdated);
-        // role data
-        assertEquals(Long.valueOf(1L), roleUpdated.getId());
-        assertEquals("TEST", roleUpdated.getRole());
+            assertNotNull(roleUpdated);
+            // role data
+            assertEquals(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), roleUpdated.getId());
+            assertEquals("TEST", roleUpdated.getRole());
 
-        // permissions
-        assertEquals(1L, roleUpdated.getPermissions().size());
+            // permissions
+            assertEquals(1L, roleUpdated.getPermissions().size());
+        });
     }
 
     // removePermissionOnRole
 
-    @Test(expected = InvalidPermissionDataException.class)
-    public void given_not_valid_permission_when_removePermissionOnRole_throw_InvalidPermissionDataException() {
-        roleService.removePermissionOnRole(1L, "");
+    @Test
+    public void givenNotValidPermission_whenRemovePermissionOnRole_throwInvalidPermissionDataException() {
+        assertThrows(InvalidPermissionDataException.class, () -> roleService.removePermissionOnRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), ""));
     }
 
-    @Test(expected = RoleNotFoundException.class)
-    public void given_not_existing_role_when_removePermissionOnRole_throw_RoleNotFoundException() {
-        roleService.removePermissionOnRole(1L, "PERMISSION");
+    @Test
+    public void givenNotExistingRole_whenRemovePermissionOnRole_throwRoleNotFoundException() {
+        assertThrows(RoleNotFoundException.class, () -> roleService.removePermissionOnRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "PERMISSION"));
     }
 
-    @Test(expected = PermissionNotFoundException.class)
-    public void given_existing_role_not_existing_permission_when_removePermissionOnRole_throw_PermissionNotFoundException() {
-        Role role = new Role(1L, "TEST");
-        given(roleRepository.findById(1L)).willReturn(Optional.of(role));
+    @Test
+    public void givenExistingRoleNotExistingPermission_whenRemovePermissionOnRole_throwPermissionNotFoundException() {
+        Role role = new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "TEST");
+        given(roleRepository.findById(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(Optional.of(role));
 
-        roleService.removePermissionOnRole(1L, "PERMISSION");
+        assertThrows(PermissionNotFoundException.class, () -> roleService.removePermissionOnRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "PERMISSION"));
     }
 
     @Test
     public void given_existing_role_existing_permission_not_used_when_removePermissionOnRole_return_Role() {
-        Role role = new Role(1L, "TEST");
-        given(roleRepository.findById(1L)).willReturn(Optional.of(role));
+        Role role = new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "TEST");
+        given(roleRepository.findById(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(Optional.of(role));
 
         Permission permission = new Permission();
-        permission.setId(1L);
+        permission.setId(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"));
         permission.setPermission("PERMISSION");
 
         given(permissionRepository.findByPermission("PERMISSION")).willReturn(Optional.of(permission));
 
-        Role roleUpdated = roleService.removePermissionOnRole(1L, "PERMISSION");
+        Role roleUpdated = roleService.removePermissionOnRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "PERMISSION");
 
         assertNotNull(roleUpdated);
         // role data
-        assertEquals(Long.valueOf(1L), roleUpdated.getId());
+        assertEquals(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), roleUpdated.getId());
         assertEquals("TEST", roleUpdated.getRole());
 
         // permissions
@@ -255,20 +255,20 @@ public class RoleServiceTest {
 
     @Test
     public void given_existing_role_existing_permission_in_used_when_removePermissionOnRole_return_Role() {
-        Role role = new Role(1L, "TEST");
-        given(roleRepository.findById(1L)).willReturn(Optional.of(role));
+        Role role = new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "TEST");
+        given(roleRepository.findById(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"))).willReturn(Optional.of(role));
 
         Permission permission = new Permission();
-        permission.setId(1L);
+        permission.setId(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"));
         permission.setPermission("PERMISSION");
 
         given(permissionRepository.findByPermission("PERMISSION")).willReturn(Optional.of(permission));
 
-        Role roleUpdated = roleService.removePermissionOnRole(1L, "PERMISSION");
+        Role roleUpdated = roleService.removePermissionOnRole(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "PERMISSION");
 
         assertNotNull(roleUpdated);
         // role data
-        assertEquals(Long.valueOf(1L), roleUpdated.getId());
+        assertEquals(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), roleUpdated.getId());
         assertEquals("TEST", roleUpdated.getRole());
 
         // permissions
@@ -280,8 +280,8 @@ public class RoleServiceTest {
     @Test
     public void calling_getRoleList_then_return_list_of_roles() {
         ArrayList<Role> roleArrayList = new ArrayList<>();
-        roleArrayList.add(new Role(1L, "FIRST_ROLE"));
-        roleArrayList.add(new Role(2L, "SECOND_ROLE"));
+        roleArrayList.add(new Role(UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28"), "FIRST_ROLE"));
+        roleArrayList.add(new Role(UUID.fromString("ada87f83-23a5-48ed-9a84-e55dcd7c6e05"), "SECOND_ROLE"));
 
         given(roleRepository.findAll()).willReturn(roleArrayList);
 

@@ -1,34 +1,36 @@
 package com.giassi.microservice.demo2.rest.users.services.validation;
 
 import com.giassi.microservice.demo2.rest.users.exceptions.InvalidUserDataException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EmailValidatorTest {
 
-    private EmailValidator emailValidator;
+    private static EmailValidator emailValidator;
 
-    @Before
-    public void initTest() {
+    @BeforeAll
+    public static void initTest() {
         emailValidator = new EmailValidator();
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_null_email_when_checkEmail_throw_InvalidUserDataException() {
+    @Test
+    public void givenNullEmailWhenCheckEmailThrowInvalidUserDataException() {
         String email = null;
-        emailValidator.checkEmail(email);
+        assertThrows(InvalidUserDataException.class, () -> emailValidator.checkEmail(email));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_empty_email_when_checkEmail_throw_InvalidUserDataException() {
+    @Test
+    public void givenEmptyEmailWhenCheckEmailThrowInvalidUserDataException() {
         String email = "";
-        emailValidator.checkEmail(email);
+        assertThrows(InvalidUserDataException.class, () -> emailValidator.checkEmail(email));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_invalid_email_when_checkEmail_throw_InvalidUserDataException() {
+    @Test
+    public void givenInvalidEmailWhenCheckEmailThrowInvalidUserDataException() {
         String email = "@gmail.com";
-        emailValidator.checkEmail(email);
+        assertThrows(InvalidUserDataException.class, () -> emailValidator.checkEmail(email));
     }
 
     @Test

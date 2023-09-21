@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Data
 public class UserDTO implements Serializable {
@@ -29,7 +31,7 @@ public class UserDTO implements Serializable {
 
             this.birthDate = user.getBirthDate();
 
-            this.enabled = user.isEnabled();
+            this.enabled = user.getEnabled();
 
             this.note = user.getNote();
 
@@ -37,7 +39,7 @@ public class UserDTO implements Serializable {
             this.updatedDt = user.getUpdatedDt();
             this.loginDt = user.getLoginDt();
 
-            this.secured = user.isSecured();
+            this.secured = user.getSecured();
 
             // contact, if set
             if (user.getContact() != null) {
@@ -58,7 +60,7 @@ public class UserDTO implements Serializable {
                 roles.add(role.getRole());
                 for (Permission p : role.getPermissions()) {
                     String key = p.getPermission();
-                    if ((!permissions.contains(key)) && (p.isEnabled())) {
+                    if ((!permissions.contains(key)) && (Optional.of(p).map(Permission::getEnabled).map(enabled -> enabled.equals(Boolean.TRUE)).orElse(false))) {
                         // add the permission only if enabled
                         permissions.add(key);
                     }
@@ -68,14 +70,21 @@ public class UserDTO implements Serializable {
         }
     }
 
-    private Long id;
+    public boolean isEnabled(){
+        return Optional.of(getEnabled()).map(enabled -> enabled.equals(Boolean.TRUE)).orElse(false);
+    }
+    public boolean isSecured(){
+        return Optional.of(getSecured()).map(secured -> secured.equals(Boolean.TRUE)).orElse(false);
+    }
+
+    private UUID id;
     private String username;
     private String name;
     private String surname;
     private String gender;
     private java.time.LocalDate birthDate;
 
-    private boolean enabled;
+    private Boolean enabled;
 
     private String note;
 
@@ -83,7 +92,7 @@ public class UserDTO implements Serializable {
     private LocalDateTime updatedDt;
     private LocalDateTime loginDt;
 
-    private boolean secured;
+    private Boolean secured;
 
     private ContactDTO contactDTO;
     private AddressDTO addressDTO;

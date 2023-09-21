@@ -9,8 +9,8 @@ import com.giassi.microservice.demo2.rest.users.entities.Role;
 import com.giassi.microservice.demo2.rest.users.entities.User;
 import com.giassi.microservice.demo2.rest.users.repositories.UserRepository;
 import com.giassi.microservice.demo2.rest.users.services.UserService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -18,17 +18,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserRestControllerTest {
 
@@ -43,21 +40,19 @@ public class UserRestControllerTest {
 
     @Test
     public void test_getUserById() {
-        Long userId = 1L;
-        String userURL = "/users/" + userId;
+        String userURL = "/users/1af36f5b-19ae-40ff-a9ae-ed64c91d2204";
 
         ResponseEntity<UserDTO> response = restTemplate.getForEntity(userURL, UserDTO.class);
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.OK);
 
         UserDTO userDTO = response.getBody();
         assertNotNull(userDTO);
 
-        assertThat(userDTO.getId(), equalTo(1L));
-        assertThat(userDTO.getName(), equalTo("Andrea"));
-        assertThat(userDTO.getSurname(), equalTo("Test"));
-        assertThat(userDTO.getContactDTO().getEmail(), equalTo("andrea.test@gmail.com"));
-        assertThat(userDTO.isEnabled(), equalTo(true));
+        Assertions.assertEquals("1af36f5b-19ae-40ff-a9ae-ed64c91d2204", userDTO.getId().toString());
+        Assertions.assertEquals(userDTO.getName(), "Andrea");
+        Assertions.assertEquals(userDTO.getSurname(), "Giassi");
+        Assertions.assertEquals(userDTO.getContactDTO().getEmail(), "andrea.test@gmail.com");
     }
 
     @Test
@@ -84,7 +79,7 @@ public class UserRestControllerTest {
         HttpEntity<CreateOrUpdateUserDTO> request = new HttpEntity<>(createOrUpdateUserDTO);
         ResponseEntity<UserDTO> response = restTemplate.postForEntity(uri, request, UserDTO.class);
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.CREATED));
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.CREATED);
 
         UserDTO userDTO = response.getBody();
         assertNotNull(userDTO);
@@ -140,13 +135,13 @@ public class UserRestControllerTest {
         HttpEntity<RegisterUserAccountDTO> requestCreate = new HttpEntity<>(quickAccount);
         ResponseEntity<UserDTO> responseCreate = restTemplate.postForEntity(registerAccountURL, requestCreate, UserDTO.class);
 
-        assertThat(responseCreate.getStatusCode(), equalTo(HttpStatus.CREATED));
+        Assertions.assertEquals(responseCreate.getStatusCode(), HttpStatus.CREATED);
         UserDTO userDTO = responseCreate.getBody();
 
         assertNotNull(userDTO);
 
         // test the update
-        Long userId = userDTO.getId();
+        UUID userId = userDTO.getId();
         URI uri = URI.create("/users/" + userId);
 
         CreateOrUpdateUserDTO createOrUpdateUserDTO = CreateOrUpdateUserDTO.builder()
@@ -169,7 +164,7 @@ public class UserRestControllerTest {
         HttpEntity<CreateOrUpdateUserDTO> request = new HttpEntity<>(createOrUpdateUserDTO);
         ResponseEntity<UserDTO> response = restTemplate.exchange(uri, HttpMethod.PUT, request, UserDTO.class);
 
-        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+        Assertions.assertEquals(responseCreate.getStatusCode(), HttpStatus.CREATED);
 
         UserDTO userUpdatedDTO = response.getBody();
 
@@ -225,7 +220,7 @@ public class UserRestControllerTest {
         HttpEntity<RegisterUserAccountDTO> request = new HttpEntity<>(quickAccount);
         ResponseEntity<UserDTO> response = restTemplate.postForEntity(registerAccountURL, request, UserDTO.class);
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.CREATED));
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.CREATED);
         UserDTO userDTO = response.getBody();
 
         assertNotNull(userDTO);
@@ -256,17 +251,17 @@ public class UserRestControllerTest {
         HttpEntity<RegisterUserAccountDTO> requestCreate = new HttpEntity<>(registerUserAccountDTO);
         ResponseEntity<UserDTO> responseCreate = restTemplate.postForEntity(registerAccountURL, requestCreate, UserDTO.class);
 
-        assertThat(responseCreate.getStatusCode(), equalTo(HttpStatus.CREATED));
+        Assertions.assertEquals(responseCreate.getStatusCode(), HttpStatus.CREATED);
         UserDTO userDTO = responseCreate.getBody();
 
         assertNotNull(userDTO);
 
         // test the add role
-        Long userId = userDTO.getId();
+        UUID userId = userDTO.getId();
         URI uri = URI.create("/users/" + userId + "/roles/" + Role.ADMINISTRATOR);
         ResponseEntity<UserDTO> response = restTemplate.exchange(uri, HttpMethod.POST, null, UserDTO.class);
 
-        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.CREATED);
 
         UserDTO addedRoleOnUserDTO = response.getBody();
 
@@ -289,20 +284,20 @@ public class UserRestControllerTest {
     @Test
     public void test_addRoleOnUser_wrongUserId() {
         // perform add role ADMINISTRATOR on not existing user
-        Long userId = 99L; // not existing user
+        UUID userId = UUID.randomUUID(); // not existing user
         URI uri = URI.create("/users/" + userId + "/roles/" + Role.ADMINISTRATOR);
         ResponseEntity<UserDTO> removeResponse = restTemplate.exchange(uri, HttpMethod.POST, null, UserDTO.class);
 
-        assertThat(removeResponse.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        Assertions.assertEquals(removeResponse.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     @Test
     public void test_addRoleOnUser_wrongRoleId() {
         // perform add role with not existing role
-        URI uri = URI.create("/users/" + 1L + "/roles/" + 99L);
+        URI uri = URI.create("/users/2d7bb435-ce39-4bbd-9fd8-44377a4680dd/roles/" + UUID.randomUUID());
         ResponseEntity<UserDTO> removeResponse = restTemplate.exchange(uri, HttpMethod.POST, null, UserDTO.class);
 
-        assertThat(removeResponse.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        Assertions.assertEquals(removeResponse.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -321,17 +316,17 @@ public class UserRestControllerTest {
         HttpEntity<RegisterUserAccountDTO> requestCreate = new HttpEntity<>(registerUserAccountDTO);
         ResponseEntity<UserDTO> responseCreate = restTemplate.postForEntity(registerAccountURL, requestCreate, UserDTO.class);
 
-        assertThat(responseCreate.getStatusCode(), equalTo(HttpStatus.CREATED));
+        Assertions.assertEquals(responseCreate.getStatusCode(), HttpStatus.CREATED);
         UserDTO userDTO = responseCreate.getBody();
 
         assertNotNull(userDTO);
 
         // test the add role
-        Long userId = userDTO.getId();
+        UUID userId = userDTO.getId();
         URI uri = URI.create("/users/" + userId + "/roles/" + Role.ADMINISTRATOR);
         ResponseEntity<UserDTO> response = restTemplate.exchange(uri, HttpMethod.POST, null, UserDTO.class);
 
-        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+        Assertions.assertEquals(response.getStatusCode(), HttpStatus.CREATED);
 
         UserDTO addedRoleOnUserDTO = response.getBody();
 
@@ -345,7 +340,7 @@ public class UserRestControllerTest {
         uri = URI.create("/users/" + userId + "/roles/" + Role.ADMINISTRATOR);
         ResponseEntity<UserDTO> removeResponse = restTemplate.exchange(uri, HttpMethod.DELETE, null, UserDTO.class);
 
-        assertThat(removeResponse.getStatusCode(), is(HttpStatus.OK));
+        Assertions.assertEquals(HttpStatus.OK, removeResponse.getStatusCode());
 
         UserDTO removedRoleOnUserDTO = removeResponse.getBody();
 
@@ -361,20 +356,20 @@ public class UserRestControllerTest {
     @Test
     public void test_removeRoleOnUser_wrongUserId() {
         // perform the remove role ADMINISTRATOR on not existing user
-        Long userId = 99L; // not existing user
+        UUID userId = UUID.randomUUID(); // not existing user
         URI uri = URI.create("/users/" + userId + "/roles/" + Role.ADMINISTRATOR);
         ResponseEntity<UserDTO> removeResponse = restTemplate.exchange(uri, HttpMethod.DELETE, null, UserDTO.class);
 
-        assertThat(removeResponse.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        Assertions.assertEquals(removeResponse.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     @Test
     public void test_removeRoleOnUser_wrongRoleId() {
         // perform the remove not existing role
-        URI uri = URI.create("/users/" + 1L + "/roles/" + 99L);
+        URI uri = URI.create("/users/1af36f5b-19ae-40ff-a9ae-ed64c91d2204/roles/" + UUID.randomUUID());
         ResponseEntity<UserDTO> removeResponse = restTemplate.exchange(uri, HttpMethod.DELETE, null, UserDTO.class);
 
-        assertThat(removeResponse.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        Assertions.assertEquals(removeResponse.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -393,7 +388,7 @@ public class UserRestControllerTest {
         HttpEntity<RegisterUserAccountDTO> request = new HttpEntity<>(quickAccount);
         ResponseEntity<UserDTO> response = restTemplate.postForEntity(registerAccountURL, request, UserDTO.class);
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.CREATED));
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
         UserDTO userDTO = response.getBody();
 
         assertNotNull(userDTO);

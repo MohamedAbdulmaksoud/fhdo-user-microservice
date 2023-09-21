@@ -2,11 +2,11 @@ package com.giassi.microservice.demo2.rest.users.entities;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name="roles")
@@ -14,19 +14,18 @@ import java.util.List;
 @NoArgsConstructor
 public class Role {
 
-    public static final long USER = 1;
-    public static final long ADMINISTRATOR = 2;
+    public static final UUID USER = UUID.fromString("477ede88-03a8-4702-b8aa-670497771c28");
+    public static final UUID ADMINISTRATOR = UUID.fromString("2dd89f24-4d96-47fc-8a62-c15e2228d8aa");
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
-    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="id")
-    private Long id;
+    private UUID id;
 
     @Column(name="role", nullable = false)
     private String role;
 
-    public Role(Long id, String role) {
+    public Role(UUID id, String role) {
         this.id = id;
         this.role = role;
     }

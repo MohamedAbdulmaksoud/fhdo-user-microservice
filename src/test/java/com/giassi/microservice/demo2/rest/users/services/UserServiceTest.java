@@ -9,28 +9,24 @@ import com.giassi.microservice.demo2.rest.users.entities.User;
 import com.giassi.microservice.demo2.rest.users.exceptions.*;
 import com.giassi.microservice.demo2.rest.users.repositories.RoleRepository;
 import com.giassi.microservice.demo2.rest.users.repositories.UserRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.giassi.microservice.demo2.rest.users.services.UserTestHelper.getUserTestData;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
     @Mock
@@ -39,11 +35,10 @@ public class UserServiceTest {
     @Mock
     private RoleRepository roleRepository;
 
-    @Autowired
     @InjectMocks
     private UserService userService = new UserService();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         // using the default salt for test
         ReflectionTestUtils.setField(userService, "salt", EncryptionService.DEFAULT_SALT);
@@ -51,11 +46,11 @@ public class UserServiceTest {
 
     @Test
     public void given_existing_users_when_getUserPresentationList_return_validList() {
-        User user1 = getUserTestData(1L, "andrea", "Andrea",
+        User user1 = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
-        User user2= getUserTestData(2L, "marco", "Marco",
+        User user2 = getUserTestData(UUID.fromString("2d7bb435-ce39-4bbd-9fd8-44377a4680dd"), "marco", "Marco",
                 "Rossi", "marco.test@gmail.com", "+3531122334466");
-        User user3 = getUserTestData(3L, "francesco", "Francesco",
+        User user3 = getUserTestData(UUID.fromString("44fe4a75-edc8-4c9f-95ce-aaa3b34dce46"), "francesco", "Francesco",
                 "Verdi", "francesco.test@gmail.com", "+3531122334477");
 
         List<User> list = Arrays.asList(user1, user2, user3);
@@ -70,19 +65,19 @@ public class UserServiceTest {
         // take the second element to test the DTO content
         UserDTO userDTO = userDTOList.get(1);
 
-        assertEquals(Long.valueOf(2L) , userDTO.getId());
-        assertEquals("marco" , userDTO.getUsername());
-        assertEquals("Marco" , userDTO.getName());
-        assertEquals("Rossi" , userDTO.getSurname());
+        assertEquals(UUID.fromString("2d7bb435-ce39-4bbd-9fd8-44377a4680dd"), userDTO.getId());
+        assertEquals("marco", userDTO.getUsername());
+        assertEquals("Marco", userDTO.getName());
+        assertEquals("Rossi", userDTO.getSurname());
 
         assertNotNull(userDTO.getContactDTO());
-        assertEquals("marco.test@gmail.com" , userDTO.getContactDTO().getEmail());
-        assertEquals("+3531122334466" , userDTO.getContactDTO().getPhone());
+        assertEquals("marco.test@gmail.com", userDTO.getContactDTO().getEmail());
+        assertEquals("+3531122334466", userDTO.getContactDTO().getPhone());
     }
 
     @Test
     public void given_existing_user_when_getUserById_returnUser() {
-        Long userId = 1L;
+        UUID userId = UUID.randomUUID();
 
         User user = getUserTestData(userId, "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
@@ -100,28 +95,27 @@ public class UserServiceTest {
         assertEquals("+3531122334455", userRet.getContact().getPhone());
     }
 
-    @Test(expected = UserNotFoundException.class)
-    public void given_not_existing_user_when_getUserById_throw_exception() {
-        Long userId = 2L;
-
+    @Test
+    public void givenNotExistingUserWhenGetUserByIdThrowException() {
+        UUID userId = UUID.randomUUID();
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
-        userService.getUserById(userId);
+        assertThrows(UserNotFoundException.class, () -> userService.getUserById(userId));
     }
 
-    @Test(expected = InvalidUserIdentifierException.class)
-    public void given_null_user_id_when_getUserById_throw_exception() {
-        userService.getUserById(null);
+    @Test
+    public void givenNullUserIdWhenGetUserByIdThrowException() {
+        assertThrows(InvalidUserIdentifierException.class, () -> userService.getUserById(null));
     }
 
-    @Test(expected = InvalidUsernameException.class)
-    public void given_null_username_when_getUserByUsername_return_user() {
-        userService.getUserByUsername(null);
+    @Test
+    public void givenNullUsernameWhenGetUserByUsernameReturnUser() {
+        assertThrows(InvalidUsernameException.class, () -> userService.getUserByUsername(null));
     }
 
     @Test
     public void given_existing_username_when_getUserByUsername_return_user() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         given(userRepository.findByUsername("andrea")).willReturn(userDataForTest);
@@ -129,7 +123,7 @@ public class UserServiceTest {
         User user = userService.getUserByUsername("andrea");
 
         assertNotNull(user);
-        assertEquals(Long.valueOf(1L), user.getId());
+        assertEquals(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), user.getId());
         assertEquals("andrea", user.getUsername());
         assertEquals("Andrea", user.getName());
         assertEquals("Giassi", user.getSurname());
@@ -139,15 +133,15 @@ public class UserServiceTest {
 
     @Test
     public void given_existing_email_when_getUserByEmail_return_user() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
-            "Giassi", "andrea.test@gmail.com", "+3531122334455");
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
+                "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         given(userRepository.findByEmail("andrea.test@gmail.com")).willReturn(userDataForTest);
 
         User user = userService.getUserByEmail("andrea.test@gmail.com");
 
         assertNotNull(user);
-        assertEquals(Long.valueOf(1L), user.getId());
+        assertEquals(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), user.getId());
         assertEquals("andrea", user.getUsername());
         assertEquals("Andrea", user.getName());
         assertEquals("Giassi", user.getSurname());
@@ -155,19 +149,19 @@ public class UserServiceTest {
         assertEquals("+3531122334455", user.getContact().getPhone());
     }
 
-    @Test(expected = InvalidEmailException.class)
-    public void given_invalid_email_getUserByEmail_throw_InvalidUserEmailException() {
-        User user = userService.getUserByEmail(null);
+    @Test
+    public void givenInvalidEmailGetUserByEmailThrowInvalidUserEmailException() {
+        assertThrows(InvalidEmailException.class, () -> userService.getUserByEmail(null));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_null_CreateUserAccountDTO_when_createNewUserAccount_throw_InvalidUserDataException() {
-        userService.registerUserAccount(null);
+    @Test
+    public void givenNullCreateUserAccountDTOWhenCreateNewUserAccountThrowInvalidUserDataException() {
+        assertThrows(InvalidUserDataException.class, () -> userService.registerUserAccount(null));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_already_existing_username_when_createNewUserAccount_throw_InvalidUserDataException() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+    @Test
+    public void givenAlreadyExistingUsernameWhenCreateNewUserAccountThrowInvalidUserDataException() {
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         given(userRepository.findByUsername("andrea")).willReturn(userDataForTest);
@@ -181,17 +175,17 @@ public class UserServiceTest {
                 .password(UserTestHelper.TEST_PASSWORD_DECRYPTED)
                 .build();
 
-        userService.registerUserAccount(registerUserAccountDTO);
+        assertThrows(InvalidUserDataException.class, () -> userService.registerUserAccount(registerUserAccountDTO));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_existing_email_when_createNewUserAccount_throw_InvalidUserDataException() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+    @Test
+    public void givenExistingEmailWhenCreateNewUserAccountThrowInvalidUserDataException() {
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         given(userRepository.findByEmail("andrea.test@gmail.com")).willReturn(userDataForTest);
 
-        // existing email
+        // Existing email
         RegisterUserAccountDTO registerUserAccountDTO = RegisterUserAccountDTO.builder()
                 .name("Marco")
                 .password("Marco!123")
@@ -202,21 +196,21 @@ public class UserServiceTest {
                 .password(UserTestHelper.TEST_PASSWORD_DECRYPTED)
                 .build();
 
-        userService.registerUserAccount(registerUserAccountDTO);
+        assertThrows(InvalidUserDataException.class, () -> userService.registerUserAccount(registerUserAccountDTO));
     }
 
-    @Test(expected = RoleNotFoundException.class)
-    public void given_invalidRole_when_setUserRole_throw_RoleNotFoundException() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+    @Test
+    public void givenInvalidRoleWhenSetUserRoleThrowRoleNotFoundException() {
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
-        // role doesn't exists
-        userService.addUserRole(userDataForTest, 1);
+        // Role doesn't exist
+        assertThrows(RoleNotFoundException.class, () -> userService.addUserRole(userDataForTest, UUID.randomUUID()));
     }
 
     @Test
     public void given_valid_role_id_when_setUserRole_returnUser() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         given(roleRepository.findById(Role.USER)).willReturn(Optional.of(new Role(Role.USER, "USER")));
@@ -231,32 +225,32 @@ public class UserServiceTest {
         assertEquals("andrea", userDataForTest.getUsername());
         assertEquals("Andrea", userDataForTest.getName());
         assertEquals("Giassi", userDataForTest.getSurname());
-        assertTrue(userDataForTest.isEnabled());
+        assertTrue(userDataForTest.getEnabled());
 
         assertNotNull(userDataForTest.getContact());
         assertEquals("andrea.test@gmail.com", userDataForTest.getContact().getEmail());
         assertEquals("+3531122334455", userDataForTest.getContact().getPhone());
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_invalid_CreateOrUpdateUserDTO_when_createUser_throw_InvalidUserDataException() {
-        userService.createUser(null);
+    @Test
+    public void givenInvalidCreateOrUpdateUserDTOWhenCreateUserThrowInvalidUserDataException() {
+        assertThrows(InvalidUserDataException.class, () -> userService.createUser(null));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_already_registered_username_when_createUser_throw_InvalidUserDataException() {
+    @Test
+    public void givenAlreadyRegisteredUsernameWhenCreateUserThrowInvalidUserDataException() {
         CreateOrUpdateUserDTO createOrUpdateUserDTO = CreateOrUpdateUserDTO.builder().username("andrea").build();
 
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         given(userRepository.findByUsername("andrea")).willReturn(userDataForTest);
 
-        userService.createUser(createOrUpdateUserDTO);
+        assertThrows(InvalidUserDataException.class, () -> userService.createUser(createOrUpdateUserDTO));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_already_registered_email_when_createUser_throw_InvalidUserDataException() {
+    @Test
+    public void givenAlreadyRegisteredEmailWhenCreateUserThrowInvalidUserDataException() {
         // existing email
         CreateOrUpdateUserDTO createOrUpdateUserDTO = CreateOrUpdateUserDTO.builder()
                 .name("Marco")
@@ -267,17 +261,17 @@ public class UserServiceTest {
                 .phone("+3531122334466")
                 .enabled(true).build();
 
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         given(userRepository.findByEmail("andrea.test@gmail.com")).willReturn(userDataForTest);
 
-        userService.createUser(createOrUpdateUserDTO);
+        assertThrows(InvalidUserDataException.class, () -> userService.createUser(createOrUpdateUserDTO));
     }
 
-    @Test(expected = InvalidGenderException.class)
-    public void given_invalid_gender_string_when_getValidGender_throw_InvalidUserGenderException() {
-        Gender.getValidGender("WRONG_GENDER");
+    @Test
+    public void givenInvalidGenderStringWhenGetValidGenderThrowInvalidUserGenderException() {
+        assertThrows(InvalidGenderException.class, () -> Gender.getValidGender("WRONG_GENDER"));
     }
 
     @Test
@@ -286,33 +280,34 @@ public class UserServiceTest {
         Gender maleGender = Gender.getValidGender("MALE");
 
         assertNotNull(maleGender);
-        assertEquals(1L , maleGender.getGender());
+        assertEquals(1L, maleGender.getGender());
 
         // female
         Gender femaleGender = Gender.getValidGender("FEMALE");
 
         assertNotNull(femaleGender);
-        assertEquals(2L , femaleGender.getGender());
+        assertEquals(2L, femaleGender.getGender());
     }
 
-    @Test(expected = InvalidUserIdentifierException.class)
-    public void given_invalid_userId_when_updateUser_throw_InvalidUserIdentifierException() {
-        userService.updateUser(null, new CreateOrUpdateUserDTO());
+    @Test
+    public void givenInvalidUserIdWhenUpdateUserThrowInvalidUserIdentifierException() {
+        assertThrows(InvalidUserIdentifierException.class, () -> userService.updateUser(null, new CreateOrUpdateUserDTO()));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_invalid_createOrUpdateUserDTO_when_updateUser_throw_InvalidUserDataException() {
-        userService.updateUser(1L, null);
+    @Test
+    public void givenInvalidCreateOrUpdateUserDTOWhenUpdateUserThrowInvalidUserDataException() {
+        assertThrows(InvalidUserDataException.class, () -> userService.updateUser(UUID.randomUUID(), null));
     }
 
-    @Test(expected = UserNotFoundException.class)
-    public void given_not_existing_userId_when_updateUser_throw_UserNotFoundException() {
-        given(userRepository.findById(1L)).willReturn(Optional.empty());
-        userService.updateUser(1L, new CreateOrUpdateUserDTO());
+    @Test
+    public void givenNotExistingUserIdWhenUpdateUserThrowUserNotFoundException() {
+        UUID uuid = UUID.randomUUID();
+        given(userRepository.findById(uuid)).willReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> userService.updateUser(uuid, new CreateOrUpdateUserDTO()));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_existing_username_when_updateUser_throw_InvalidUserDataException() {
+    @Test
+    public void givenExistingUsernameWhenUpdateUserThrowInvalidUserDataException() {
         // setting an existing username
         CreateOrUpdateUserDTO createOrUpdateUserDTO = CreateOrUpdateUserDTO.builder()
                 .name("Marco")
@@ -324,19 +319,19 @@ public class UserServiceTest {
                 .enabled(true)
                 .build();
 
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
-        User userDataForTest2 = getUserTestData(2L, "andrea", "Marco",
+        User userDataForTest2 = getUserTestData(UUID.fromString("2d7bb435-ce39-4bbd-9fd8-44377a4680dd"), "andrea", "Marco",
                 "Rossi", "marco.test@gmail.com", "+3531122334466");
 
-        given(userRepository.findById(2L)).willReturn(Optional.of(userDataForTest2));
+        given(userRepository.findById(UUID.fromString("2d7bb435-ce39-4bbd-9fd8-44377a4680dd"))).willReturn(Optional.of(userDataForTest2));
         given(userRepository.findByUsername("andrea")).willReturn(userDataForTest);
 
-        userService.updateUser(2L, createOrUpdateUserDTO);
+        assertThrows(InvalidUserDataException.class, () -> userService.updateUser(UUID.fromString("2d7bb435-ce39-4bbd-9fd8-44377a4680dd"), createOrUpdateUserDTO));
     }
 
-    @Test(expected = InvalidUserDataException.class)
-    public void given_existing_email_when_updateUser_throw_InvalidUserDataException() {
+    @Test
+    public void givenExistingEmailWhenUpdateUserThrowInvalidUserDataException() {
         // setting an existing email
         CreateOrUpdateUserDTO createOrUpdateUserDTO = CreateOrUpdateUserDTO.builder()
                 .name("Marco")
@@ -349,19 +344,20 @@ public class UserServiceTest {
                 .enabled(true)
                 .build();
 
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        User userDataForTest = getUserTestData(UUID.fromString("1af36f5b-19ae-40ff-a9ae-ed64c91d2204"), "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
-        User userDataForTest2 = getUserTestData(2L, "marco", "Marco",
+        User userDataForTest2 = getUserTestData(UUID.fromString("2d7bb435-ce39-4bbd-9fd8-44377a4680dd"), "andrea", "Marco",
                 "Rossi", "marco.test@gmail.com", "+3531122334466");
 
-        given(userRepository.findById(2L)).willReturn(Optional.of(userDataForTest2));
+        given(userRepository.findById(UUID.fromString("2d7bb435-ce39-4bbd-9fd8-44377a4680dd"))).willReturn(Optional.of(userDataForTest2));
         given(userRepository.findByEmail("andrea.test@gmail.com")).willReturn(userDataForTest);
 
-        userService.updateUser(2L, createOrUpdateUserDTO);
+        assertThrows(InvalidUserDataException.class, () -> userService.updateUser(UUID.fromString("2d7bb435-ce39-4bbd-9fd8-44377a4680dd"), createOrUpdateUserDTO));
     }
 
     @Test
     public void given_existing_user_when_updatedUser_return_userUpdated() {
+        UUID uuid = UUID.randomUUID();
         // correct user data, update the phone number
         CreateOrUpdateUserDTO createOrUpdateUserDTO = CreateOrUpdateUserDTO.builder()
                 .name("Andrea")
@@ -375,48 +371,51 @@ public class UserServiceTest {
                 .address("via roma 3").city("Rome").country("Italy").zipCode("00100")
                 .build();
 
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        User userDataForTest = getUserTestData(uuid, "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
-        given(userRepository.findById(1L)).willReturn(Optional.of(userDataForTest));
+        given(userRepository.findById(uuid)).willReturn(Optional.of(userDataForTest));
 
-        userService.updateUser(1L, createOrUpdateUserDTO);
+        userService.updateUser(uuid, createOrUpdateUserDTO);
         verify(userRepository, times(1)).save(Mockito.any(User.class));
     }
 
-    @Test(expected = InvalidUserIdentifierException.class)
-    public void given_null_userId_when_deleteUserById_throw_InvalidUserIdentifierException() {
-        userService.deleteUserById(null);
+    @Test
+    public void givenNullUserIdWhenDeleteUserByIdThrowInvalidUserIdentifierException() {
+        assertThrows(InvalidUserIdentifierException.class, () -> userService.deleteUserById(null));
     }
 
-    @Test(expected = UserNotFoundException.class)
-    public void given_not_existing_userId_when_deleteUserById_throw_UserNotFoundException() {
-        userService.deleteUserById(1L);
+    @Test
+    public void givenNotExistingUserIdWhenDeleteUserByIdThrowUserNotFoundException() {
+        UUID uuid = UUID.randomUUID();
+        given(userRepository.findById(uuid)).willReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUserById(uuid));
     }
 
-    @Test(expected = InvalidLoginException.class)
-    public void given_null_username_and_null_password_when_login_throw_InvalidLoginException() {
-        userService.login(null, null);
+    @Test
+    public void givenNullUsernameAndPasswordWhenLoginThrowInvalidLoginException() {
+        assertThrows(InvalidLoginException.class, () -> userService.login(null, null));
     }
 
-    @Test(expected = InvalidLoginException.class)
-    public void given_null_username_login_when_login_throw_InvalidLoginException() {
-        userService.login(null, "WRONG_PWD");
+    @Test
+    public void givenNullUsernameWhenLoginThrowInvalidLoginException() {
+        assertThrows(InvalidLoginException.class, () -> userService.login(null, "WRONG_PWD"));
     }
 
-    @Test(expected = InvalidLoginException.class)
-    public void given_null_password_login_when_login_throw_InvalidLoginException() {
-        userService.login("WRONG", null);
+    @Test
+    public void givenNullPasswordWhenLoginThrowInvalidLoginException() {
+        assertThrows(InvalidLoginException.class, () -> userService.login("WRONG", null));
     }
 
-    @Test(expected = InvalidLoginException.class)
-    public void given_invalid_login_when_login_throw_InvalidLoginException() {
-        userService.login("WRONG", "WRONG_PWD");
+    @Test
+    public void givenInvalidLoginWhenLoginThrowInvalidLoginException() {
+        assertThrows(InvalidLoginException.class, () -> userService.login("WRONG", "WRONG_PWD"));
     }
 
     @Test
     public void given_valid_login_when_login_return_User() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        UUID uuid = UUID.randomUUID();
+        User userDataForTest = getUserTestData(uuid, "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         given(userRepository.findByUsername("andrea")).willReturn(userDataForTest);
@@ -427,56 +426,63 @@ public class UserServiceTest {
         assertEquals("andrea", user.getUsername());
     }
 
-    @Test(expected = InvalidLoginException.class)
-    public void given_invalid_login2_when_login_throw_InvalidLoginException() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+
+    @Test
+    public void givenInvalidLogin2WhenLoginThrowInvalidLoginException() {
+        UUID uuid = UUID.randomUUID();
+        User userDataForTest = getUserTestData(uuid, "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         given(userRepository.findByUsername("andrea")).willReturn(userDataForTest);
 
-        User user = userService.login("andrea", "WRONG_PWD");
+        assertThrows(InvalidLoginException.class, () -> userService.login("andrea", "WRONG_PWD"));
     }
 
-    @Test(expected = InvalidLoginException.class)
-    public void given_not_enabled_login_when_login_throw_InvalidLoginException() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+    @Test
+    public void givenNotEnabledLoginWhenLoginThrowInvalidLoginException() {
+        UUID uuid = UUID.randomUUID();
+        User userDataForTest = getUserTestData(uuid, "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         userDataForTest.setEnabled(false);
 
         given(userRepository.findByUsername("andrea")).willReturn(userDataForTest);
 
-        User user = userService.login("andrea", UserTestHelper.TEST_PASSWORD_DECRYPTED);
+        assertThrows(InvalidLoginException.class, () -> userService.login("andrea", UserTestHelper.TEST_PASSWORD_DECRYPTED));
     }
 
     // tests add role on User
-    @Test(expected = UserNotFoundException.class)
-    public void given_notExistingUserId_when_addRole_throw_UserNotFoundException() {
-        User user = userService.addRole(99L, 2L);
+    @Test
+    public void givenNotExistingUserIdWhenAddRoleThrowUserNotFoundException() {
+        UUID uuid = UUID.randomUUID();
+        given(userRepository.findById(uuid)).willReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> userService.addRole(uuid, UUID.fromString("2dd89f24-4d96-47fc-8a62-c15e2228d8aa")));
     }
 
-    @Test(expected = RoleNotFoundException.class)
-    public void given_existingUserId_notExistingRoleId_when_addRole_throw_RoleNotFoundException() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+    @Test
+    public void givenExistingUserIdNotExistingRoleIdWhenAddRoleThrowRoleNotFoundException() {
+        UUID uuid = UUID.randomUUID();
+        User userDataForTest = getUserTestData(uuid, "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
-        given(userRepository.findById(1L)).willReturn(Optional.of(userDataForTest));
+        given(userRepository.findById(uuid)).willReturn(Optional.of(userDataForTest));
 
-        userService.addRole(1L, 99L);
+        assertThrows(RoleNotFoundException.class, () -> userService.addRole(uuid, uuid));
     }
 
     @Test
     public void given_validUserAndRoleIds_when_addRole_returnUser() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        UUID uuid = UUID.randomUUID();
+        User userDataForTest = getUserTestData(uuid, "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
-        given(userRepository.findById(1L)).willReturn(Optional.of(userDataForTest));
+        given(userRepository.findById(uuid)).willReturn(Optional.of(userDataForTest));
 
         Role roleAdmin = new Role(Role.ADMINISTRATOR, "Administrator");
 
-        given(roleRepository.findById(2L)).willReturn(Optional.of(roleAdmin));
+        given(roleRepository.findById(UUID.fromString("2dd89f24-4d96-47fc-8a62-c15e2228d8aa"))).willReturn(Optional.of(roleAdmin));
 
-        User user = userService.addRole(1L, 2L);
+        User user = userService.addRole(uuid, UUID.fromString("2dd89f24-4d96-47fc-8a62-c15e2228d8aa"));
 
         assertNotNull(user);
 
@@ -489,33 +495,50 @@ public class UserServiceTest {
     }
 
     // test remove role from User
-    @Test(expected = UserNotFoundException.class)
-    public void given_notExistingUserId_when_removeRole_throw_UserNotFoundException() {
-        User user = userService.removeRole(99L, 2L);
+    @Test
+    public void givenNotExistingUserIdWhenRemoveRoleThrowUserNotFoundException() {
+        UUID uuid = UUID.randomUUID();
+        given(userRepository.findById(uuid)).willReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> userService.removeRole(uuid, UUID.fromString("2dd89f24-4d96-47fc-8a62-c15e2228d8aa")));
     }
 
-    @Test(expected = RoleNotFoundException.class)
-    public void given_existingUserId_notExistingRoleId_when_removeRole_throw_RoleNotFoundException() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+    @Test
+    public void givenExistingUserIdNotExistingRoleIdWhenRemoveRoleThrowRoleNotFoundException() {
+        UUID uuid = UUID.randomUUID();
+        User userDataForTest = getUserTestData(uuid, "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
-        given(userRepository.findById(1L)).willReturn(Optional.of(userDataForTest));
+        given(userRepository.findById(uuid)).willReturn(Optional.of(userDataForTest));
 
-        userService.removeRole(1L, 99L);
+        assertThrows(RoleNotFoundException.class, () -> userService.removeRole(uuid, uuid));
+    }
+
+    @Test
+    public void givenValidSecuredUserWhenDeleteUserThrowUserIsSecuredException() {
+        UUID uuid = UUID.randomUUID();
+        User userDataForTest = getUserTestData(uuid, "andrea", "Andrea",
+                "Giassi", "andrea.test@gmail.com", "+3531122334455");
+        // set a secure user
+        userDataForTest.setSecured(true);
+
+        given(userRepository.findById(uuid)).willReturn(Optional.of(userDataForTest));
+
+        assertThrows(UserIsSecuredException.class, () -> userService.deleteUserById(uuid));
     }
 
     @Test
     public void given_validUserAndRoleIds_when_removeRole_returnUser() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
+        UUID uuid = UUID.randomUUID();
+        User userDataForTest = getUserTestData(uuid, "andrea", "Andrea",
                 "Giassi", "andrea.test@gmail.com", "+3531122334455");
 
         Role roleAdmin = new Role(Role.ADMINISTRATOR, "Administrator");
         userDataForTest.getRoles().add(roleAdmin);
 
-        given(userRepository.findById(1L)).willReturn(Optional.of(userDataForTest));
-        given(roleRepository.findById(2L)).willReturn(Optional.of(roleAdmin));
+        given(userRepository.findById(uuid)).willReturn(Optional.of(userDataForTest));
+        given(roleRepository.findById(UUID.fromString("2dd89f24-4d96-47fc-8a62-c15e2228d8aa"))).willReturn(Optional.of(roleAdmin));
 
-        User user = userService.removeRole(1L, 2L);
+        User user = userService.removeRole(uuid, UUID.fromString("2dd89f24-4d96-47fc-8a62-c15e2228d8aa"));
 
         assertNotNull(user);
 
@@ -524,19 +547,7 @@ public class UserServiceTest {
 
         assertNotNull(roleSet);
         assertEquals(1, roleSet.size());
-        assertTrue(!roleSet.contains(roleAdmin));
-    }
-
-    @Test(expected = UserIsSecuredException.class)
-    public void given_validSecuredUser_when_deleteUser_throw_UserIsSecuredException() {
-        User userDataForTest = getUserTestData(1L, "andrea", "Andrea",
-                "Giassi", "andrea.test@gmail.com", "+3531122334455");
-        // set a secure user
-        userDataForTest.setSecured(true);
-
-        given(userRepository.findById(1L)).willReturn(Optional.of(userDataForTest));
-
-        userService.deleteUserById(1L);
+        assertFalse(roleSet.contains(roleAdmin));
     }
 
 }

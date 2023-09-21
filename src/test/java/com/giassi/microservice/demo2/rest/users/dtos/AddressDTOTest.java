@@ -1,9 +1,9 @@
 package com.giassi.microservice.demo2.rest.users.dtos;
 
 import com.giassi.microservice.demo2.rest.users.entities.Address;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AddressDTOTest {
 

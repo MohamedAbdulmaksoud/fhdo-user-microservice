@@ -1,11 +1,11 @@
 package com.giassi.microservice.demo2.rest.users.entities;
 
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name="users")
@@ -13,10 +13,9 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
-    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="id")
-    private Long id;
+    private UUID id;
 
     @Column(name="username", nullable = false)
     private String username;
@@ -31,7 +30,7 @@ public class User {
     private String surname;
 
     @Enumerated
-    @Column(columnDefinition = "tinyint")
+    @Column(columnDefinition = "smallint")
     private Gender gender;
 
     // Birth date without a time-zone in the ISO-8601 calendar system, such as 2007-12-03
@@ -45,7 +44,7 @@ public class User {
     private Address address;
 
     @Column(name="enabled")
-    private boolean enabled;
+    private Boolean enabled;
 
     @Column(name="note")
     private String note;
@@ -66,6 +65,6 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     @Column(name="secured")
-    private boolean secured;
+    private Boolean secured;
 
 }

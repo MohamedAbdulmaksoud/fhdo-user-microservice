@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "/users/rbac")
@@ -40,12 +41,12 @@ public class RBACRestController {
     }
 
     @GetMapping("/roles/{roleId}")
-    public RoleDTO getRoleById(@PathVariable("roleId") Long roleId) {
+    public RoleDTO getRoleById(@PathVariable("roleId") UUID roleId) {
         return new RoleDTO(roleService.getRoleById(roleId));
     }
 
     @DeleteMapping("/roles/{roleId}")
-    public ResponseEntity<?> deleteRoleById(@PathVariable("roleId") Long roleId) {
+    public ResponseEntity<?> deleteRoleById(@PathVariable("roleId") UUID roleId) {
         roleService.deleteRole(roleId);
         return ResponseEntity.noContent().build();
     }
@@ -86,12 +87,12 @@ public class RBACRestController {
     // add or remove a Permission on a Role
 
     @PostMapping("/roles/{roleId}/permissions/{permissionKey}")
-    public ResponseEntity<RoleDTO> addPermissionOnRole(@PathVariable("roleId") Long roleId, @PathVariable("permissionKey") String permissionKey) {
+    public ResponseEntity<RoleDTO> addPermissionOnRole(@PathVariable("roleId") UUID roleId, @PathVariable("permissionKey") String permissionKey) {
         return new ResponseEntity(new RoleDTO(roleService.addPermissionOnRole(roleId, permissionKey)), null, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/roles/{roleId}/permissions/{permissionKey}")
-    public ResponseEntity<RoleDTO> removePermissionOnRole(@PathVariable("roleId") Long roleId, @PathVariable("permissionKey") String permissionKey) {
+    public ResponseEntity<RoleDTO> removePermissionOnRole(@PathVariable("roleId") UUID roleId, @PathVariable("permissionKey") String permissionKey) {
         return new ResponseEntity(new RoleDTO(roleService.removePermissionOnRole(roleId, permissionKey)), null, HttpStatus.OK);
     }
 

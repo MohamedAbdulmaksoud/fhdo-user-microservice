@@ -1,19 +1,20 @@
 package com.giassi.microservice.demo2.rest.users.dtos;
 
 import com.giassi.microservice.demo2.rest.users.entities.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UserDTOTest {
 
     @Test
     public void userDTOTestConstructor1() {
         User user = new User();
-        user.setId(1L);
+        user.setId(UUID.randomUUID());
         user.setUsername("testUsername");
         user.setName("testName");
         user.setSurname("testSurname");
@@ -67,7 +68,7 @@ public class UserDTOTest {
         assertEquals(userDTO.getContactDTO().getWebsite(), user.getContact().getWebsite());
         assertEquals(userDTO.getContactDTO().getContactNote(), user.getContact().getNote());
 
-        assertEquals(userDTO.isEnabled(), user.isEnabled());
+        assertEquals(userDTO.isEnabled(), user.getEnabled());
 
         assertEquals(creationDt, userDTO.getCreationDt());
         assertEquals(updatedDt, userDTO.getUpdatedDt());
@@ -85,7 +86,7 @@ public class UserDTOTest {
     public void userDTOTestConstructor2() {
         // test enabled and disabled permissions
         User user = new User();
-        user.setId(1L);
+        user.setId(UUID.randomUUID());
         user.setUsername("testUsername");
         user.setName("testName");
         user.setSurname("testSurname");
@@ -115,10 +116,10 @@ public class UserDTOTest {
         Role roleUser = new Role(Role.USER, "USER");
         Role roleAdmin = new Role(Role.ADMINISTRATOR, "ADMINISTRATOR");
 
-        Permission p1 = new Permission(1L, "LOGIN", true, "Login");
-        Permission p2 = new Permission(2L, "VIEW_PROFILE", true, "View Profile");
-        Permission p3 = new Permission(3L, "ADMIN_STATISTICS", false, "View statistical graphs");
-        Permission p4 = new Permission(4L, "ADMIN_PROFILES", true, "Manage users");
+        Permission p1 = new Permission(UUID.randomUUID(), "LOGIN", true, "Login");
+        Permission p2 = new Permission(UUID.randomUUID(), "VIEW_PROFILE", true, "View Profile");
+        Permission p3 = new Permission(UUID.randomUUID(), "ADMIN_STATISTICS", false, "View statistical graphs");
+        Permission p4 = new Permission(UUID.randomUUID(), "ADMIN_PROFILES", true, "Manage users");
 
         roleUser.getPermissions().add(p1);
         roleUser.getPermissions().add(p2);
@@ -151,7 +152,7 @@ public class UserDTOTest {
         assertEquals(userDTO.getContactDTO().getWebsite(), user.getContact().getWebsite());
         assertEquals(userDTO.getContactDTO().getContactNote(), user.getContact().getNote());
 
-        assertEquals(userDTO.isEnabled(), user.isEnabled());
+        assertEquals(userDTO.isEnabled(), user.getEnabled());
 
         assertEquals(creationDt, userDTO.getCreationDt());
         assertEquals(updatedDt, userDTO.getUpdatedDt());

@@ -3,9 +3,9 @@ package com.giassi.microservice.demo2.rest.users.entities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Entity
 @Table(name="permissions")
@@ -14,23 +14,22 @@ import javax.persistence.*;
 @AllArgsConstructor
 public class Permission {
 
-    public Permission(Long id, String permission) {
+    public Permission(UUID id, String permission) {
         this.id = id;
         this.permission = permission;
     }
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO, generator="native")
-    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="id")
-    private Long id;
+    private UUID id;
 
     @Column(name="permission", nullable = false)
     private String permission;
 
     // enabled as default
     @Column(name="enabled")
-    private boolean enabled = true;
+    private Boolean enabled = true;
 
     @Column(name="note")
     private String note;

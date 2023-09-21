@@ -1,7 +1,7 @@
 package com.giassi.microservice.demo2.rest.users.dtos;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class UserListDTOTest {
 
@@ -9,8 +9,8 @@ public class UserListDTOTest {
     public void userListDTOTest() {
         UserListDTO userListDTO = new UserListDTO();
 
-        Assert.assertNotNull(userListDTO.getUserList().size());
-        Assert.assertEquals(0, userListDTO.getUserList().size());
+        Assertions.assertNotNull(userListDTO.getUserList().size());
+        Assertions.assertEquals(0, userListDTO.getUserList().size());
     }
 
 }

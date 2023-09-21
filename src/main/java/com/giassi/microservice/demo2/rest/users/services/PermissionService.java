@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -73,7 +74,7 @@ public class PermissionService {
             throw new InvalidPermissionDataException("Permission data cannot be null");
         }
 
-        Long permissionId = permissionDTO.getId();
+        UUID permissionId = permissionDTO.getId();
         Optional<Permission> permissionOpt = permissionRepository.findById(permissionId);
         if (!permissionOpt.isPresent()) {
             throw new PermissionNotFoundException(String.format("The permission with the id = %s has not been found",

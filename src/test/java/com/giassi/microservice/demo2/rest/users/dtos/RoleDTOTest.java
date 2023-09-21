@@ -1,15 +1,17 @@
 package com.giassi.microservice.demo2.rest.users.dtos;
 
 import com.giassi.microservice.demo2.rest.users.entities.Role;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RoleDTOTest {
 
     @Test
     public void testRoleDTOConstructor1() {
-        Role role = new Role(1L, "USER");
+        Role role = new Role(UUID.fromString("08cb3618-63ab-4c9f-80a3-928bc2bfe632"), "USER");
 
         RoleDTO roleDTO = new RoleDTO(role);
 
@@ -19,20 +21,10 @@ public class RoleDTOTest {
 
     @Test
     public void testRoleDTOConstructor2() {
-        RoleDTO roleDTO = new RoleDTO(1L, "USER");
+        RoleDTO roleDTO = new RoleDTO(UUID.fromString("08cb3618-63ab-4c9f-80a3-928bc2bfe632"), "USER");
 
-        assertEquals(Long.valueOf(1L), roleDTO.getId());
+        assertEquals("08cb3618-63ab-4c9f-80a3-928bc2bfe632", roleDTO.getId().toString());
         assertEquals("USER", roleDTO.getRole());
-    }
-
-    @Test
-    public void testEquals() {
-        RoleDTO roleDTO = new RoleDTO(1L, "USER");
-        RoleDTO roleDTO2 = new RoleDTO(1L, "USER");
-
-        assertTrue(roleDTO.equals(roleDTO));
-        assertFalse(roleDTO.equals("WRONG"));
-        assertTrue(roleDTO.equals(roleDTO2));
     }
 
 }

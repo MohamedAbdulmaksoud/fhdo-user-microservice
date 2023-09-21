@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -27,7 +28,7 @@ public class RoleService {
         return roleRepository.findAll();
     }
 
-    public Role getRoleById(Long id) {
+    public Role getRoleById(UUID id) {
         if (id == null) {
             throw new InvalidRoleIdentifierException("Id role cannot be null");
         }
@@ -65,7 +66,7 @@ public class RoleService {
     }
 
     @Transactional
-    public void deleteRole(Long id) {
+    public void deleteRole(UUID id) {
         Optional<Role> roleOpt = roleRepository.findById(id);
         if (!roleOpt.isPresent()) {
             String errMsg = String.format("Role not found for Id = %s cannot be deleted", id);
@@ -97,7 +98,7 @@ public class RoleService {
     }
 
     @Transactional
-    public Role addPermissionOnRole(Long roleId, String permissionKey) {
+    public Role addPermissionOnRole(UUID roleId, String permissionKey) {
         validatePermissionKey(permissionKey);
 
         // check role
@@ -136,7 +137,7 @@ public class RoleService {
     }
 
     @Transactional
-    public Role removePermissionOnRole(Long roleId, String permissionKey) {
+    public Role removePermissionOnRole(UUID roleId, String permissionKey) {
         validatePermissionKey(permissionKey);
 
         // check role
